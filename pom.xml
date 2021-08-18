@@ -24,7 +24,7 @@
   <properties>
     <project.git.project>utils-spring-security</project.git.project>
     <version.utils-lang>1.0.3</version.utils-lang>
-    <version.spring-security>5.5.1</version.spring-security>
+    <version.spring-security>5.5.2</version.spring-security>
     <version.javax.servlet>2.5</version.javax.servlet>
   </properties>
 

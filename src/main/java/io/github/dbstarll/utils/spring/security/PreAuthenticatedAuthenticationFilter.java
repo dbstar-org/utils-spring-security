@@ -11,26 +11,27 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 public abstract class PreAuthenticatedAuthenticationFilter<P, C> extends AbstractPreAuthenticatedProcessingFilter {
-  private final RequestMatcher requestMatcher;
+    private final RequestMatcher requestMatcher;
 
-  public PreAuthenticatedAuthenticationFilter(RequestMatcher requestMatcher, boolean checkForPrincipalChanges) {
-    this.requestMatcher = requestMatcher;
-    setCheckForPrincipalChanges(checkForPrincipalChanges);
-  }
-
-  @Override
-  public final void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-          throws IOException, ServletException {
-    if (requestMatcher == null || requestMatcher.matches((HttpServletRequest) request)) {
-      super.doFilter(request, response, chain);
-    } else {
-      chain.doFilter(request, response);
+    protected PreAuthenticatedAuthenticationFilter(final RequestMatcher requestMatcher,
+                                                   final boolean checkForPrincipalChanges) {
+        this.requestMatcher = requestMatcher;
+        setCheckForPrincipalChanges(checkForPrincipalChanges);
     }
-  }
 
-  @Override
-  protected abstract P getPreAuthenticatedPrincipal(HttpServletRequest request);
+    @Override
+    public final void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
+            throws IOException, ServletException {
+        if (requestMatcher == null || requestMatcher.matches((HttpServletRequest) request)) {
+            super.doFilter(request, response, chain);
+        } else {
+            chain.doFilter(request, response);
+        }
+    }
 
-  @Override
-  protected abstract C getPreAuthenticatedCredentials(HttpServletRequest request);
+    @Override
+    protected abstract P getPreAuthenticatedPrincipal(HttpServletRequest request);
+
+    @Override
+    protected abstract C getPreAuthenticatedCredentials(HttpServletRequest request);
 }

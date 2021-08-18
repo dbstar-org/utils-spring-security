@@ -8,10 +8,10 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class PreAuthenticatedAuthenticationServiceManager
         implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
@@ -20,37 +20,35 @@ public final class PreAuthenticatedAuthenticationServiceManager
     /**
      * 构造.
      *
-     * @param authentications authentication集合
+     * @param auths authentication集合
      */
-    public PreAuthenticatedAuthenticationServiceManager(List<PreAuthenticatedAuthentication<?, ?>> authentications) {
-        this.authentications = new HashMap<Entry<?, ?>, PreAuthenticatedAuthentication<?, ?>>();
-        for (PreAuthenticatedAuthentication<?, ?> authentication : authentications) {
-            this.authentications.put(parseKey(authentication), authentication);
-        }
+    public PreAuthenticatedAuthenticationServiceManager(final Collection<PreAuthenticatedAuthentication<?, ?>> auths) {
+        this.authentications = new ConcurrentHashMap<>();
+        auths.forEach(authentication -> this.authentications.put(parseKey(authentication), authentication));
     }
 
     @SuppressWarnings("unchecked")
-    private static <P, C> Entry<Class<P>, Class<C>> parseKey(PreAuthenticatedAuthentication<P, C> authentication) {
-        final ParameterizedType type = (ParameterizedType) authentication.getClass().getGenericSuperclass();
+    private static <P, C> Entry<Class<P>, Class<C>> parseKey(final PreAuthenticatedAuthentication<P, C> auth) {
+        final ParameterizedType type = (ParameterizedType) auth.getClass().getGenericSuperclass();
         final Type[] keys = type.getActualTypeArguments();
         return EntryWrapper.wrap((Class<P>) keys[0], (Class<C>) keys[1]);
     }
 
     @Override
-    public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws UsernameNotFoundException {
+    public UserDetails loadUserDetails(final PreAuthenticatedAuthenticationToken token)
+            throws UsernameNotFoundException {
         return loadUserDetails(token.getPrincipal(), token.getCredentials(), token);
     }
 
     @SuppressWarnings("unchecked")
-    private <P, C> UserDetails loadUserDetails(P principal, C credentials, PreAuthenticatedAuthenticationToken token) {
+    private <P, C> UserDetails loadUserDetails(final P principal,
+                                               final C credentials,
+                                               final PreAuthenticatedAuthenticationToken token) {
         final Entry<?, ?> key = EntryWrapper.wrap(principal.getClass(), credentials.getClass());
-        final PreAuthenticatedAuthentication<P, C> authentication = (PreAuthenticatedAuthentication<P, C>) authentications
-                .get(key);
-        if (authentication != null) {
-            return authentication.service().loadUserDetails(
-                    new io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationToken<P, C>(token));
-        } else {
+        return ((PreAuthenticatedAuthentication<P, C>) authentications.computeIfAbsent(key, k -> {
             throw new UsernameNotFoundException(token.getName());
-        }
+        })).service().loadUserDetails(
+                new io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationToken<P, C>(token)
+        );
     }
 }

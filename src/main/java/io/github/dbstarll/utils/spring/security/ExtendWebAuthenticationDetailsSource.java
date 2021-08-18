@@ -8,33 +8,28 @@ import javax.servlet.http.HttpServletRequest;
 
 public class ExtendWebAuthenticationDetailsSource
         implements AuthenticationDetailsSource<HttpServletRequest, ExtendWebAuthenticationDetails> {
-  public static class ExtendWebAuthenticationDetails extends WebAuthenticationDetails {
-    private static final long serialVersionUID = -8798951602862583760L;
+    public static final class ExtendWebAuthenticationDetails extends WebAuthenticationDetails {
+        private static final long serialVersionUID = -8798951602862583760L;
 
-    private final String userAgent;
+        private final String userAgent;
 
-    private ExtendWebAuthenticationDetails(HttpServletRequest request) {
-      super(request);
-      this.userAgent = request.getHeader("user-agent");
-    }
+        private ExtendWebAuthenticationDetails(final HttpServletRequest request) {
+            super(request);
+            this.userAgent = request.getHeader("user-agent");
+        }
 
-    public String getUserAgent() {
-      return userAgent;
+        /**
+         * 获得user-agent头信息.
+         *
+         * @return user-agent
+         */
+        public String getUserAgent() {
+            return userAgent;
+        }
     }
 
     @Override
-    public boolean equals(Object obj) {
-      return super.equals(obj);
+    public ExtendWebAuthenticationDetails buildDetails(final HttpServletRequest context) {
+        return new ExtendWebAuthenticationDetails(context);
     }
-
-    @Override
-    public int hashCode() {
-      return super.hashCode();
-    }
-  }
-
-  @Override
-  public ExtendWebAuthenticationDetails buildDetails(HttpServletRequest context) {
-    return new ExtendWebAuthenticationDetails(context);
-  }
 }

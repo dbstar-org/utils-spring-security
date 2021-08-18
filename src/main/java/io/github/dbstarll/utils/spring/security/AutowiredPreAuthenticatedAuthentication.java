@@ -17,13 +17,13 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
 
     private AutowireCapableBeanFactory factory;
 
-    public AutowiredPreAuthenticatedAuthentication() {
+    protected AutowiredPreAuthenticatedAuthentication() {
         this.refFilter = new AtomicReference<PreAuthenticatedAuthenticationFilter<P, C>>();
         this.refService = new AtomicReference<PreAuthenticatedAuthenticationService<P, C>>();
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException {
         this.factory = applicationContext.getAutowireCapableBeanFactory();
     }
 
@@ -38,8 +38,8 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
         if (filter != null) {
             return filter;
         } else {
-            final PreAuthenticatedAuthenticationFilter<P, C> originalFilter = notNull(originalFilter(), "filter is null");
-            return refFilter.compareAndSet(null, originalFilter) ? autowire(originalFilter) : refFilter.get();
+            final PreAuthenticatedAuthenticationFilter<P, C> original = notNull(originalFilter(), "filter is null");
+            return refFilter.compareAndSet(null, original) ? autowire(original) : refFilter.get();
         }
     }
 
@@ -49,12 +49,12 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
         if (service != null) {
             return service;
         } else {
-            final PreAuthenticatedAuthenticationService<P, C> originalService = notNull(originalService(), "service is null");
-            return refService.compareAndSet(null, originalService) ? autowire(originalService) : refService.get();
+            final PreAuthenticatedAuthenticationService<P, C> original = notNull(originalService(), "service is null");
+            return refService.compareAndSet(null, original) ? autowire(original) : refService.get();
         }
     }
 
-    private <I> I autowire(I bean) {
+    private <I> I autowire(final I bean) {
         if (factory != null) {
             factory.autowireBeanProperties(bean, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false);
             factory.initializeBean(bean, bean.getClass().getName());

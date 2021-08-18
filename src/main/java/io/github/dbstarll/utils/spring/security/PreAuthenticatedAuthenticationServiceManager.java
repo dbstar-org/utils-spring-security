@@ -20,11 +20,11 @@ public final class PreAuthenticatedAuthenticationServiceManager
     /**
      * 构造.
      *
-     * @param auths authentication集合
+     * @param authn authentication集合
      */
-    public PreAuthenticatedAuthenticationServiceManager(final Collection<PreAuthenticatedAuthentication<?, ?>> auths) {
+    public PreAuthenticatedAuthenticationServiceManager(final Collection<PreAuthenticatedAuthentication<?, ?>> authn) {
         this.authentications = new ConcurrentHashMap<>();
-        auths.forEach(authentication -> this.authentications.put(parseKey(authentication), authentication));
+        authn.forEach(authentication -> this.authentications.put(parseKey(authentication), authentication));
     }
 
     @SuppressWarnings("unchecked")
@@ -48,7 +48,7 @@ public final class PreAuthenticatedAuthenticationServiceManager
         return ((PreAuthenticatedAuthentication<P, C>) authentications.computeIfAbsent(key, k -> {
             throw new UsernameNotFoundException(token.getName());
         })).service().loadUserDetails(
-                new io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationToken<P, C>(token)
+                new io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationToken<>(token)
         );
     }
 }

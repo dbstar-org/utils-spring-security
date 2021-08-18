@@ -18,8 +18,8 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
     private AutowireCapableBeanFactory factory;
 
     protected AutowiredPreAuthenticatedAuthentication() {
-        this.refFilter = new AtomicReference<PreAuthenticatedAuthenticationFilter<P, C>>();
-        this.refService = new AtomicReference<PreAuthenticatedAuthenticationService<P, C>>();
+        this.refFilter = new AtomicReference<>();
+        this.refService = new AtomicReference<>();
     }
 
     @Override
@@ -28,7 +28,7 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         notNull(factory, "AutowireCapableBeanFactory is null");
     }
 

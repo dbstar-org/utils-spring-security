@@ -8,7 +8,6 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,11 +19,12 @@ public final class PreAuthenticatedAuthenticationServiceManager
     /**
      * 构造.
      *
-     * @param authn authentication集合
+     * @param authentications authentication集合
      */
-    public PreAuthenticatedAuthenticationServiceManager(final Collection<PreAuthenticatedAuthentication<?, ?>> authn) {
+    public PreAuthenticatedAuthenticationServiceManager(
+            final Iterable<PreAuthenticatedAuthentication<?, ?>> authentications) {
         this.authentications = new ConcurrentHashMap<>();
-        authn.forEach(authentication -> this.authentications.put(parseKey(authentication), authentication));
+        authentications.forEach(authentication -> this.authentications.put(parseKey(authentication), authentication));
     }
 
     @SuppressWarnings("unchecked")
@@ -46,7 +46,7 @@ public final class PreAuthenticatedAuthenticationServiceManager
                                                final PreAuthenticatedAuthenticationToken token) {
         final Entry<?, ?> key = EntryWrapper.wrap(principal.getClass(), credentials.getClass());
         return ((PreAuthenticatedAuthentication<P, C>) authentications.computeIfAbsent(key, k -> {
-            throw new UsernameNotFoundException(token.getName());
+            throw new UsernameNotFoundException("bad credentials");
         })).service().loadUserDetails(
                 new io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationToken<>(token)
         );

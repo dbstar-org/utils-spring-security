@@ -1,6 +1,7 @@
 package io.github.dbstarll.utils.spring.security;
 
 import io.github.dbstarll.utils.lang.wrapper.EntryWrapper;
+import org.springframework.security.authentication.ProviderNotFoundException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
@@ -42,7 +43,7 @@ public final class PreAuthenticatedAuthenticationServiceManager implements PreAu
         return services.computeIfAbsent(key, k -> {
             final String msg = String.format("PreAuthenticatedAuthentication<%s, %s> not found",
                     k.getKey().getName(), k.getValue().getName());
-            throw new UsernameNotFoundException(msg);
+            throw new ProviderNotFoundException(msg);
         }).loadUserDetails(token);
     }
 }

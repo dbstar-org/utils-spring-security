@@ -2,9 +2,9 @@ package io.github.dbstarll.utils.spring.security;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.ThrowingConsumer;
+import org.springframework.security.authentication.ProviderNotFoundException;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 import java.util.Collections;
@@ -28,7 +28,7 @@ class PreAuthenticatedAuthenticationServiceManagerTest {
     @Test
     void empty() throws Throwable {
         useService(Collections.emptyList(), s -> {
-            final Exception e = assertThrowsExactly(UsernameNotFoundException.class,
+            final Exception e = assertThrowsExactly(ProviderNotFoundException.class,
                     () -> s.loadUserDetails(token("principal", "credentials")));
             assertEquals("PreAuthenticatedAuthentication<java.lang.String, java.lang.String> not found", e.getMessage());
         });

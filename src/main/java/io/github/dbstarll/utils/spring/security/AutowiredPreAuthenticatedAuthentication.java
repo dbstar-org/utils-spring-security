@@ -15,11 +15,16 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
     private final AtomicReference<PreAuthenticatedAuthenticationFilter<P, C>> refFilter;
     private final AtomicReference<PreAuthenticatedAuthenticationService<P, C>> refService;
 
+    private final Class<P> principalClass;
+    private final Class<C> credentialsClass;
+
     private AutowireCapableBeanFactory factory;
 
-    protected AutowiredPreAuthenticatedAuthentication() {
+    protected AutowiredPreAuthenticatedAuthentication(final Class<P> principalClass, final Class<C> credentialsClass) {
         this.refFilter = new AtomicReference<>();
         this.refService = new AtomicReference<>();
+        this.principalClass = principalClass;
+        this.credentialsClass = credentialsClass;
     }
 
     @Override
@@ -65,4 +70,14 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
     protected abstract PreAuthenticatedAuthenticationFilter<P, C> originalFilter();
 
     protected abstract PreAuthenticatedAuthenticationService<P, C> originalService();
+
+    @Override
+    public final Class<P> getPrincipalClass() {
+        return principalClass;
+    }
+
+    @Override
+    public final Class<C> getCredentialsClass() {
+        return credentialsClass;
+    }
 }

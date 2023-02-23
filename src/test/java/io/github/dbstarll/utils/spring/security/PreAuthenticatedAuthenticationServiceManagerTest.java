@@ -3,12 +3,14 @@ package io.github.dbstarll.utils.spring.security;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.ThrowingConsumer;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 class PreAuthenticatedAuthenticationServiceManagerTest {
@@ -28,7 +30,47 @@ class PreAuthenticatedAuthenticationServiceManagerTest {
         useService(Collections.emptyList(), s -> {
             final Exception e = assertThrowsExactly(UsernameNotFoundException.class,
                     () -> s.loadUserDetails(token("principal", "credentials")));
-            assertEquals("bad credentials", e.getMessage());
+            assertEquals("principal", e.getMessage());
+        });
+    }
+
+    @Test
+    void direct() throws Throwable {
+        useService(Collections.singleton(new DirectAuthentication()), s -> {
+            final UserDetails details = s.loadUserDetails(token("principal", "credentials"));
+            assertNotNull(details);
+            assertEquals("principal", details.getUsername());
+            assertEquals("credentials", details.getPassword());
+        });
+    }
+
+    @Test
+    void inDirect() throws Throwable {
+        useService(Collections.singleton(new InDirectAuthentication()), s -> {
+            final UserDetails details = s.loadUserDetails(token("principal", "credentials"));
+            assertNotNull(details);
+            assertEquals("principal", details.getUsername());
+            assertEquals("credentials", details.getPassword());
+        });
+    }
+
+    @Test
+    void directAutowired() throws Throwable {
+        useService(Collections.singleton(new DirectAutowiredAuthentication()), s -> {
+            final UserDetails details = s.loadUserDetails(token("principal", "credentials"));
+            assertNotNull(details);
+            assertEquals("principal", details.getUsername());
+            assertEquals("credentials", details.getPassword());
+        });
+    }
+
+    @Test
+    void inDirectAutowired() throws Throwable {
+        useService(Collections.singleton(new InDirectAutowiredAuthentication()), s -> {
+            final UserDetails details = s.loadUserDetails(token("principal", "credentials"));
+            assertNotNull(details);
+            assertEquals("principal", details.getUsername());
+            assertEquals("credentials", details.getPassword());
         });
     }
 }

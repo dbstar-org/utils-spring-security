@@ -6,14 +6,20 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 public abstract class PreAuthenticatedAuthenticationUserDetails<P, C> implements UserDetails {
     private static final long serialVersionUID = -637710468004220183L;
 
-    private final PreAuthenticatedAuthenticationToken token;
+    protected final PreAuthenticatedAuthenticationToken token;
 
     protected PreAuthenticatedAuthenticationUserDetails(final PreAuthenticatedAuthenticationToken token) {
         this.token = token;
     }
 
-    protected final PreAuthenticatedAuthenticationToken getToken() {
-        return token;
+    @SuppressWarnings("unchecked")
+    protected final P getPrincipal() {
+        return (P) token.getPrincipal();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected final C getCredentials() {
+        return (C) token.getCredentials();
     }
 
     @Override

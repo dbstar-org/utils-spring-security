@@ -43,8 +43,8 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
         if (filter != null) {
             return filter;
         } else {
-            final PreAuthenticatedAuthenticationFilter<P, C> original = notNull(originalFilter(), "filter is null");
-            return refFilter.compareAndSet(null, original) ? autowire(original) : refFilter.get();
+            refFilter.compareAndSet(null, autowire(notNull(originalFilter(), "filter is null")));
+            return refFilter.get();
         }
     }
 
@@ -54,8 +54,8 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
         if (service != null) {
             return service;
         } else {
-            final PreAuthenticatedAuthenticationService original = notNull(originalService(), "service is null");
-            return refService.compareAndSet(null, original) ? autowire(original) : refService.get();
+            refService.compareAndSet(null, autowire(notNull(originalService(), "service is null")));
+            return refService.get();
         }
     }
 

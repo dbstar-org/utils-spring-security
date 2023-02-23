@@ -7,7 +7,7 @@ public class DirectAuthentication implements PreAuthenticatedAuthentication<Stri
     }
 
     @Override
-    public PreAuthenticatedAuthenticationService<String, String> service() {
+    public PreAuthenticatedAuthenticationService service() {
         return new StringAuthenticationService();
     }
 

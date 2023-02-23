@@ -1,7 +1,7 @@
 package io.github.dbstarll.utils.spring.security;
 
-public class DirectAutowiredAuthentication extends AutowiredPreAuthenticatedAuthentication<String, String> {
-    public DirectAutowiredAuthentication() {
+public class AutowiredAuthentication extends AutowiredPreAuthenticatedAuthentication<String, String> {
+    public AutowiredAuthentication() {
         super(String.class, String.class);
     }
 
@@ -11,7 +11,7 @@ public class DirectAutowiredAuthentication extends AutowiredPreAuthenticatedAuth
     }
 
     @Override
-    protected PreAuthenticatedAuthenticationService<String, String> originalService() {
+    protected PreAuthenticatedAuthenticationService originalService() {
         return new StringAuthenticationService();
     }
 }

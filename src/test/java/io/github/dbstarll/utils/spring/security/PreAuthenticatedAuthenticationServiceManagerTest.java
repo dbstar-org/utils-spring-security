@@ -45,28 +45,8 @@ class PreAuthenticatedAuthenticationServiceManagerTest {
     }
 
     @Test
-    void inDirect() throws Throwable {
-        useService(Collections.singleton(new InDirectAuthentication()), s -> {
-            final UserDetails details = s.loadUserDetails(token("principal", "credentials"));
-            assertNotNull(details);
-            assertEquals("principal", details.getUsername());
-            assertEquals("credentials", details.getPassword());
-        });
-    }
-
-    @Test
-    void directAutowired() throws Throwable {
-        useService(Collections.singleton(new DirectAutowiredAuthentication()), s -> {
-            final UserDetails details = s.loadUserDetails(token("principal", "credentials"));
-            assertNotNull(details);
-            assertEquals("principal", details.getUsername());
-            assertEquals("credentials", details.getPassword());
-        });
-    }
-
-    @Test
-    void inDirectAutowired() throws Throwable {
-        useService(Collections.singleton(new InDirectAutowiredAuthentication()), s -> {
+    void autowired() throws Throwable {
+        useService(Collections.singleton(new AutowiredAuthentication()), s -> {
             final UserDetails details = s.loadUserDetails(token("principal", "credentials"));
             assertNotNull(details);
             assertEquals("principal", details.getUsername());

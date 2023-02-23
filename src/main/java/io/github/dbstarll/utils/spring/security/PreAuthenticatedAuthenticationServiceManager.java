@@ -1,7 +1,6 @@
 package io.github.dbstarll.utils.spring.security;
 
 import io.github.dbstarll.utils.lang.wrapper.EntryWrapper;
-import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
@@ -12,9 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.commons.lang3.Validate.notNull;
 
-public final class PreAuthenticatedAuthenticationServiceManager
-        implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
-    private final Map<Entry<?, ?>, PreAuthenticatedAuthentication<?, ?>> authentications;
+public final class PreAuthenticatedAuthenticationServiceManager implements PreAuthenticatedAuthenticationService {
+    private final Map<Entry<?, ?>, PreAuthenticatedAuthenticationService> services;
 
     /**
      * 构造.
@@ -23,8 +21,8 @@ public final class PreAuthenticatedAuthenticationServiceManager
      */
     public PreAuthenticatedAuthenticationServiceManager(
             final Iterable<PreAuthenticatedAuthentication<?, ?>> authentications) {
-        this.authentications = new ConcurrentHashMap<>();
-        authentications.forEach(authentication -> this.authentications.put(parseKey(authentication), authentication));
+        this.services = new ConcurrentHashMap<>();
+        authentications.forEach(auth -> this.services.put(parseKey(notNull(auth)), notNull(auth.service())));
     }
 
     private static <P, C> Entry<Class<P>, Class<C>> parseKey(final PreAuthenticatedAuthentication<P, C> auth) {
@@ -34,18 +32,9 @@ public final class PreAuthenticatedAuthenticationServiceManager
     @Override
     public UserDetails loadUserDetails(final PreAuthenticatedAuthenticationToken token)
             throws UsernameNotFoundException {
-        return loadUserDetails(token.getPrincipal(), token.getCredentials(), token);
-    }
-
-    @SuppressWarnings("unchecked")
-    private <P, C> UserDetails loadUserDetails(final P principal,
-                                               final C credentials,
-                                               final PreAuthenticatedAuthenticationToken token) {
-        final Entry<?, ?> key = EntryWrapper.wrap(principal.getClass(), credentials.getClass());
-        return ((PreAuthenticatedAuthentication<P, C>) authentications.computeIfAbsent(key, k -> {
+        final Entry<?, ?> key = EntryWrapper.wrap(token.getPrincipal().getClass(), token.getCredentials().getClass());
+        return services.computeIfAbsent(key, k -> {
             throw new UsernameNotFoundException(token.getName());
-        })).service().loadUserDetails(
-                new io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationToken<>(token)
-        );
+        }).loadUserDetails(token);
     }
 }

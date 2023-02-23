@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.apache.commons.lang3.Validate.notNull;
 
 public final class PreAuthenticatedAuthenticationServiceManager implements PreAuthenticatedAuthenticationService {
-    private final Map<Entry<? extends Class<?>, ? extends Class<?>>, PreAuthenticatedAuthenticationService> services;
+    private final Map<Entry<Class<?>, Class<?>>, PreAuthenticatedAuthenticationService> services;
 
     /**
      * 构造.
@@ -28,19 +28,22 @@ public final class PreAuthenticatedAuthenticationServiceManager implements PreAu
                 notNull(auth.service(), "auth.service() is null")));
     }
 
-    private static <P, C> Entry<Class<P>, Class<C>> parseKey(final PreAuthenticatedAuthentication<P, C> auth) {
+    private static Entry<Class<?>, Class<?>> parseKey(final PreAuthenticatedAuthentication<?, ?> authentication) {
         return EntryWrapper.wrap(
-                notNull(auth.getPrincipalClass(), "auth.getPrincipalClass() is null"),
-                notNull(auth.getCredentialsClass(), "auth.getCredentialsClass() is null"));
+                notNull(authentication.getPrincipalClass(), "authentication.getPrincipalClass() is null"),
+                notNull(authentication.getCredentialsClass(), "authentication.getCredentialsClass() is null"));
+    }
+
+    private static Entry<Class<?>, Class<?>> parseKey(final PreAuthenticatedAuthenticationToken token) {
+        return EntryWrapper.wrap(
+                notNull(token.getPrincipal(), "token.getPrincipal() is null").getClass(),
+                notNull(token.getCredentials(), "token.getCredentials() is null").getClass());
     }
 
     @Override
     public UserDetails loadUserDetails(final PreAuthenticatedAuthenticationToken token)
             throws UsernameNotFoundException {
-        final Entry<Class<?>, Class<?>> key = EntryWrapper.wrap(
-                notNull(token.getPrincipal(), "token.getPrincipal() is null").getClass(),
-                notNull(token.getCredentials(), "token.getCredentials() is null").getClass());
-        return services.computeIfAbsent(key, k -> {
+        return services.computeIfAbsent(parseKey(token), k -> {
             final String msg = String.format("PreAuthenticatedAuthentication<%s, %s> not found",
                     k.getKey().getName(), k.getValue().getName());
             throw new ProviderNotFoundException(msg);

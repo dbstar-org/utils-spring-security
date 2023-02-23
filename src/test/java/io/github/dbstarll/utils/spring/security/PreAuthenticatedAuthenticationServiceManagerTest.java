@@ -30,7 +30,7 @@ class PreAuthenticatedAuthenticationServiceManagerTest {
         useService(Collections.emptyList(), s -> {
             final Exception e = assertThrowsExactly(UsernameNotFoundException.class,
                     () -> s.loadUserDetails(token("principal", "credentials")));
-            assertEquals("principal", e.getMessage());
+            assertEquals("PreAuthenticatedAuthentication<java.lang.String, java.lang.String> not found", e.getMessage());
         });
     }
 

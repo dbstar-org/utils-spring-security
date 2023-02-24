@@ -5,20 +5,12 @@ import io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationSe
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 
-import javax.servlet.Filter;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 @AutoConfiguration
 @EnableWebSecurity
@@ -51,34 +43,6 @@ public class PreAuthenticatedAuthenticationAutoConfiguration {
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     SecurityFilterChain preAuthenticatedAuthenticationFilters(
             final HttpSecurity http, final List<PreAuthenticatedAuthentication<?, ?>> auths) {
-        try {
-            return http.apply(new PreAuthenticatedAuthenticationFilterConfigurerAdapter(auths)).and().build();
-        } catch (Exception e) {
-            throw new PreAuthenticatedAuthenticationFilterConfigurerException("register filter failed.", e);
-        }
-    }
-
-    private static final class PreAuthenticatedAuthenticationFilterConfigurerAdapter
-            extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
-        private final List<PreAuthenticatedAuthentication<?, ?>> auths;
-
-        private PreAuthenticatedAuthenticationFilterConfigurerAdapter(
-                final List<PreAuthenticatedAuthentication<?, ?>> auths) {
-            this.auths = auths;
-        }
-
-        @Override
-        public void configure(final HttpSecurity builder) {
-            final Set<Class<? extends Filter>> filterClasses = new HashSet<>();
-            final AtomicReference<Class<? extends Filter>> afterFilter =
-                    new AtomicReference<>(AbstractPreAuthenticatedProcessingFilter.class);
-            final AuthenticationManager authManager = builder.getSharedObject(AuthenticationManager.class);
-            auths.stream().map(auth -> auth.filter(authManager)).forEach(filter -> {
-                final Class<? extends Filter> filterClass = filter.getClass();
-                if (filterClasses.add(filterClass)) {
-                    builder.addFilterAfter(filter, afterFilter.getAndSet(filterClass));
-                }
-            });
-        }
+        return new PreAuthenticatedAuthenticationFilterConfigurerAdapter(auths).build(http);
     }
 }

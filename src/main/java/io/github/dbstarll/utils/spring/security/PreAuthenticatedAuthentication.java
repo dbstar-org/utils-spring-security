@@ -1,12 +1,15 @@
 package io.github.dbstarll.utils.spring.security;
 
+import org.springframework.security.authentication.AuthenticationManager;
+
 public interface PreAuthenticatedAuthentication<P, C> {
     /**
      * 获得PreAuthenticatedAuthenticationFilter.
      *
+     * @param authenticationManager AuthenticationManager实例
      * @return PreAuthenticatedAuthenticationFilter
      */
-    PreAuthenticatedAuthenticationFilter<P, C> filter();
+    PreAuthenticatedAuthenticationFilter<P, C> filter(AuthenticationManager authenticationManager);
 
     /**
      * 获得PreAuthenticatedAuthenticationService.

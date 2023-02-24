@@ -1,7 +1,8 @@
 package io.github.dbstarll.utils.spring.security;
 
+import org.springframework.security.authentication.AuthenticationManager;
+
 public class AutowiredAuthentication extends AutowiredPreAuthenticatedAuthentication<String, String> {
-    private PreAuthenticatedAuthenticationFilter<String, String> originalFilter = new StringAuthenticationFilter();
     private PreAuthenticatedAuthenticationService originalService = new StringAuthenticationService();
 
     public AutowiredAuthentication() {
@@ -9,12 +10,9 @@ public class AutowiredAuthentication extends AutowiredPreAuthenticatedAuthentica
     }
 
     @Override
-    protected PreAuthenticatedAuthenticationFilter<String, String> originalFilter() {
-        return originalFilter;
-    }
-
-    public void setOriginalFilter(final PreAuthenticatedAuthenticationFilter<String, String> originalFilter) {
-        this.originalFilter = originalFilter;
+    protected PreAuthenticatedAuthenticationFilter<String, String> originalFilter(
+            final AuthenticationManager authenticationManager) {
+        return new StringAuthenticationFilter(authenticationManager);
     }
 
     @Override

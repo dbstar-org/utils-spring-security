@@ -44,7 +44,9 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
         if (filter != null) {
             return filter;
         } else {
-            refFilter.compareAndSet(null, autowire(notNull(originalFilter(authenticationManager), "filter is null")));
+            final PreAuthenticatedAuthenticationFilter<P, C> originalFilter = originalFilter();
+            notNull(originalFilter, "originalFilter is null").setAuthenticationManager(authenticationManager);
+            refFilter.compareAndSet(null, autowire(originalFilter));
             return refFilter.get();
         }
     }
@@ -55,7 +57,7 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
         if (service != null) {
             return service;
         } else {
-            refService.compareAndSet(null, autowire(notNull(originalService(), "service is null")));
+            refService.compareAndSet(null, autowire(notNull(originalService(), "originalService is null")));
             return refService.get();
         }
     }
@@ -68,8 +70,7 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
         return bean;
     }
 
-    protected abstract PreAuthenticatedAuthenticationFilter<P, C> originalFilter(
-            AuthenticationManager authenticationManager);
+    protected abstract PreAuthenticatedAuthenticationFilter<P, C> originalFilter();
 
     protected abstract PreAuthenticatedAuthenticationService originalService();
 

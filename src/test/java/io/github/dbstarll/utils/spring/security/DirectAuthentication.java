@@ -4,9 +4,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 
 public class DirectAuthentication implements PreAuthenticatedAuthentication<String, String> {
     @Override
-    public PreAuthenticatedAuthenticationFilter<String, String> filter(
-            final AuthenticationManager authenticationManager) {
-        return new StringAuthenticationFilter(authenticationManager);
+    public PreAuthenticatedAuthenticationFilter<String, String> filter(AuthenticationManager authenticationManager) {
+        final PreAuthenticatedAuthenticationFilter<String, String> filter = new StringAuthenticationFilter();
+        filter.setAuthenticationManager(authenticationManager);
+        return filter;
     }
 
     @Override

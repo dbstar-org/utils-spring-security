@@ -1,10 +1,12 @@
 package io.github.dbstarll.utils.spring.security.autoconfigure;
 
+import io.github.dbstarll.utils.spring.security.ExtendWebAuthenticationDetailsSource;
 import io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthentication;
 import io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationServiceManager;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -44,5 +46,16 @@ public class PreAuthenticatedAuthenticationAutoConfiguration {
     SecurityFilterChain preAuthenticatedAuthenticationFilters(
             final HttpSecurity http, final List<PreAuthenticatedAuthentication<?, ?>> auths) {
         return new PreAuthenticatedAuthenticationFilterConfigurerAdapter(auths).build(http);
+    }
+
+    /**
+     * 注入ExtendWebAuthenticationDetailsSource实例.
+     *
+     * @return ExtendWebAuthenticationDetailsSource实例
+     */
+    @Bean
+    @ConditionalOnMissingBean(AuthenticationDetailsSource.class)
+    ExtendWebAuthenticationDetailsSource extendWebAuthenticationDetailsSource() {
+        return new ExtendWebAuthenticationDetailsSource();
     }
 }

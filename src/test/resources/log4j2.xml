@@ -10,5 +10,6 @@
       <AppenderRef ref="Console"/>
     </Root>
     <Logger name="io.github.dbstarll.utils" level="debug"/>
+    <Logger name="_org.springframework.web.servlet.HandlerMapping.Mappings" level="debug"/>
   </Loggers>
 </Configuration>

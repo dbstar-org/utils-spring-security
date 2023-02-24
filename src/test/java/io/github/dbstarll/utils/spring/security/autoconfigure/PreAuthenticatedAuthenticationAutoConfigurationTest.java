@@ -2,27 +2,37 @@ package io.github.dbstarll.utils.spring.security.autoconfigure;
 
 import io.github.dbstarll.utils.spring.security.AutowiredAuthentication;
 import io.github.dbstarll.utils.spring.security.DirectAuthentication;
-import io.github.dbstarll.utils.spring.security.autoconfigure.PreAuthenticatedAuthenticationAutoConfigurationTest.TestAutoConfiguration;
+import io.github.dbstarll.utils.spring.security.autoconfigure.PreAuthenticatedAuthenticationAutoConfigurationTest.TestConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
         classes = {
                 ServletWebServerFactoryAutoConfiguration.class,
                 PreAuthenticatedAuthenticationAutoConfiguration.class,
-                TestAutoConfiguration.class
+                TestConfiguration.class
         })
 class PreAuthenticatedAuthenticationAutoConfigurationTest {
-    @Configuration
-    static class TestAutoConfiguration {
+    @SpringBootApplication
+    static class TestConfiguration {
         @Bean
         AutowiredAuthentication autowiredAuthentication() {
             return new AutowiredAuthentication();
@@ -32,6 +42,14 @@ class PreAuthenticatedAuthenticationAutoConfigurationTest {
         DirectAuthentication directAuthentication() {
             return new DirectAuthentication();
         }
+
+        @RestController
+        static class HomeController {
+            @RequestMapping("/greeting")
+            public Authentication greeting(final Authentication authentication) {
+                return authentication;
+            }
+        }
     }
 
     @Autowired(required = false)
@@ -40,5 +58,31 @@ class PreAuthenticatedAuthenticationAutoConfigurationTest {
     @Test
     void preAuthenticatedAuthenticationProvider() {
         assertNotNull(preAuthenticatedAuthenticationProvider);
+    }
+
+    @Value(value = "${local.server.port}")
+    private int port;
+
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+    private String url() {
+        return "http://localhost:" + port + "/greeting";
+    }
+
+    @Test
+    public void noAuthentication() {
+        final ResponseEntity<Authentication> entity = restTemplate.getForEntity(url(), Authentication.class);
+        assertNull(entity.getBody());
+    }
+
+    @Test
+    public void authentication() {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add("test_username", "principal");
+        headers.add("test_password", "credentials");
+        final ResponseEntity<String> entity = restTemplate.exchange(url(), HttpMethod.GET,
+                new HttpEntity<String>(headers), String.class);
+        System.out.println(entity.getBody());
     }
 }

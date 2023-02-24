@@ -11,6 +11,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 class PreAuthenticatedAuthenticationServiceManagerTest {
@@ -40,7 +41,7 @@ class PreAuthenticatedAuthenticationServiceManagerTest {
             final UserDetails details = s.loadUserDetails(token("principal", "credentials"));
             assertNotNull(details);
             assertEquals("principal", details.getUsername());
-            assertEquals("credentials", details.getPassword());
+            assertNull(details.getPassword());
         });
     }
 
@@ -50,7 +51,7 @@ class PreAuthenticatedAuthenticationServiceManagerTest {
             final UserDetails details = s.loadUserDetails(token("principal", "credentials"));
             assertNotNull(details);
             assertEquals("principal", details.getUsername());
-            assertEquals("credentials", details.getPassword());
+            assertNull(details.getPassword());
         });
     }
 }

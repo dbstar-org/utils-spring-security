@@ -11,11 +11,11 @@ public class StringAuthenticationFilter extends PreAuthenticatedAuthenticationFi
 
     @Override
     protected String getPreAuthenticatedPrincipal(HttpServletRequest request) {
-        return null;
+        return request.getHeader("test_username");
     }
 
     @Override
     protected String getPreAuthenticatedCredentials(HttpServletRequest request) {
-        return null;
+        return request.getHeader("test_password");
     }
 }

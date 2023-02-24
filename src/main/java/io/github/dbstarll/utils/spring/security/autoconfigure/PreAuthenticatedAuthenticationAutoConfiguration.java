@@ -31,6 +31,7 @@ public class PreAuthenticatedAuthenticationAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(PreAuthenticatedAuthenticationProvider.class)
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     PreAuthenticatedAuthenticationProvider preAuthenticatedAuthenticationProvider(
             final List<PreAuthenticatedAuthentication<?, ?>> auths) {
         final PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
@@ -45,25 +46,39 @@ public class PreAuthenticatedAuthenticationAutoConfiguration {
      * @param http  HttpSecurity实例
      * @param auths PreAuthenticatedAuthentication实例集合
      * @return SecurityFilterChain
-     * @throws Exception http.build()异常
      */
     @Bean
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     SecurityFilterChain preAuthenticatedAuthenticationFilters(
-            final HttpSecurity http, final List<PreAuthenticatedAuthentication<?, ?>> auths) throws Exception {
-        return http.apply(new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
-            @Override
-            public void configure(final HttpSecurity builder) {
-                final Set<Class<? extends Filter>> filterClasses = new HashSet<>();
-                final AtomicReference<Class<? extends Filter>> afterFilter =
-                        new AtomicReference<>(AbstractPreAuthenticatedProcessingFilter.class);
-                final AuthenticationManager authManager = builder.getSharedObject(AuthenticationManager.class);
-                auths.stream().map(auth -> auth.filter(authManager)).forEach(filter -> {
-                    final Class<? extends Filter> filterClass = filter.getClass();
-                    if (filterClasses.add(filterClass)) {
-                        builder.addFilterAfter(filter, afterFilter.getAndSet(filterClass));
-                    }
-                });
-            }
-        }).and().build();
+            final HttpSecurity http, final List<PreAuthenticatedAuthentication<?, ?>> auths) {
+        try {
+            return http.apply(new PreAuthenticatedAuthenticationFilterConfigurerAdapter(auths)).and().build();
+        } catch (Exception e) {
+            throw new PreAuthenticatedAuthenticationFilterConfigurerException("register filter failed.", e);
+        }
+    }
+
+    private static final class PreAuthenticatedAuthenticationFilterConfigurerAdapter
+            extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
+        private final List<PreAuthenticatedAuthentication<?, ?>> auths;
+
+        private PreAuthenticatedAuthenticationFilterConfigurerAdapter(
+                final List<PreAuthenticatedAuthentication<?, ?>> auths) {
+            this.auths = auths;
+        }
+
+        @Override
+        public void configure(final HttpSecurity builder) {
+            final Set<Class<? extends Filter>> filterClasses = new HashSet<>();
+            final AtomicReference<Class<? extends Filter>> afterFilter =
+                    new AtomicReference<>(AbstractPreAuthenticatedProcessingFilter.class);
+            final AuthenticationManager authManager = builder.getSharedObject(AuthenticationManager.class);
+            auths.stream().map(auth -> auth.filter(authManager)).forEach(filter -> {
+                final Class<? extends Filter> filterClass = filter.getClass();
+                if (filterClasses.add(filterClass)) {
+                    builder.addFilterAfter(filter, afterFilter.getAndSet(filterClass));
+                }
+            });
+        }
     }
 }

@@ -1,12 +1,16 @@
 package io.github.dbstarll.utils.spring.security;
 
-import org.springframework.security.web.util.matcher.AnyRequestMatcher;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import javax.servlet.http.HttpServletRequest;
 
 public class StringAuthenticationFilter extends PreAuthenticatedAuthenticationFilter<String, String> {
+    private static final RequestMatcher requestMatcher = new AntPathRequestMatcher("/auth", HttpMethod.POST.name());
+
     public StringAuthenticationFilter() {
-        super(AnyRequestMatcher.INSTANCE, true);
+        super(requestMatcher, true);
     }
 
     @Override

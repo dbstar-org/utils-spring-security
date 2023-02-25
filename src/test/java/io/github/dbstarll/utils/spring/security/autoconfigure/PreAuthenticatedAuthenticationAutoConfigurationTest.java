@@ -45,8 +45,8 @@ class PreAuthenticatedAuthenticationAutoConfigurationTest {
 
         @RestController
         static class HomeController {
-            @RequestMapping("/greeting")
-            public Authentication greeting(final Authentication authentication) {
+            @RequestMapping("/auth")
+            public Authentication auth(final Authentication authentication) {
                 return authentication;
             }
         }
@@ -67,22 +67,32 @@ class PreAuthenticatedAuthenticationAutoConfigurationTest {
     private TestRestTemplate restTemplate;
 
     private String url() {
-        return "http://localhost:" + port + "/greeting";
+        return "http://localhost:" + port + "/auth";
     }
 
     @Test
     public void noAuthentication() {
-        final ResponseEntity<Authentication> entity = restTemplate.getForEntity(url(), Authentication.class);
-        assertNull(entity.getBody());
+        assertNull(restTemplate.getForEntity(url(), String.class).getBody());
     }
 
     @Test
     public void authentication() {
+        final ResponseEntity<String> entity = restTemplate.exchange(url(), HttpMethod.POST,
+                authEntity(), String.class);
+        assertNotNull(entity.getBody());
+        System.out.println(entity.getBody());
+        entity.getHeaders().entrySet().forEach(System.out::println);
+    }
+
+    @Test
+    public void filterNotMatch() {
+        assertNull(restTemplate.exchange(url(), HttpMethod.GET, authEntity(), String.class).getBody());
+    }
+
+    private HttpEntity<String> authEntity() {
         final HttpHeaders headers = new HttpHeaders();
         headers.add("test_username", "principal");
         headers.add("test_password", "credentials");
-        final ResponseEntity<String> entity = restTemplate.exchange(url(), HttpMethod.GET,
-                new HttpEntity<String>(headers), String.class);
-        System.out.println(entity.getBody());
+        return new HttpEntity<>(headers);
     }
 }

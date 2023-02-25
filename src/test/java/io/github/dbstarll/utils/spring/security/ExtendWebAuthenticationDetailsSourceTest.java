@@ -38,9 +38,8 @@ class ExtendWebAuthenticationDetailsSourceTest {
                 .header("user-agent", "ExtendWebAuthenticationDetailsSourceTest")
                 .buildRequest(new MockServletContext()));
 
-        assertEquals(details, details);
         assertTrue(Stream.of(null, "null").noneMatch(details::equals));
-        assertEquals(details, details1);
+        assertTrue(Stream.of(details, details1).allMatch(details::equals));
         assertEquals(details.hashCode(), details1.hashCode());
     }
 }

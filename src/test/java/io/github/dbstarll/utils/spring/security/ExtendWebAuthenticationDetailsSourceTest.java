@@ -4,10 +4,13 @@ import io.github.dbstarll.utils.spring.security.ExtendWebAuthenticationDetailsSo
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.stream.Stream;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExtendWebAuthenticationDetailsSourceTest {
     private ExtendWebAuthenticationDetailsSource source;
@@ -27,17 +30,16 @@ class ExtendWebAuthenticationDetailsSourceTest {
         final ExtendWebAuthenticationDetails details = source.buildDetails(MockMvcRequestBuilders
                 .get("/auth")
                 .header("user-agent", "ExtendWebAuthenticationDetailsSourceTest")
-                .buildRequest(null));
+                .buildRequest(new MockServletContext()));
         assertEquals("ExtendWebAuthenticationDetailsSourceTest", details.getUserAgent());
 
         final ExtendWebAuthenticationDetails details1 = source.buildDetails(MockMvcRequestBuilders
                 .get("/auth")
                 .header("user-agent", "ExtendWebAuthenticationDetailsSourceTest")
-                .buildRequest(null));
+                .buildRequest(new MockServletContext()));
 
-        assertNotEquals(details, null);
-        assertNotEquals(details, new Object());
         assertEquals(details, details);
+        assertTrue(Stream.of(null, "null").noneMatch(details::equals));
         assertEquals(details, details1);
         assertEquals(details.hashCode(), details1.hashCode());
     }

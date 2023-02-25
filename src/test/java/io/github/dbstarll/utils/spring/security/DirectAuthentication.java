@@ -1,13 +1,9 @@
 package io.github.dbstarll.utils.spring.security;
 
-import org.springframework.security.authentication.AuthenticationManager;
-
 public class DirectAuthentication implements PreAuthenticatedAuthentication<String, String> {
     @Override
-    public PreAuthenticatedAuthenticationFilter<String, String> filter(AuthenticationManager authenticationManager) {
-        final PreAuthenticatedAuthenticationFilter<String, String> filter = new StringAuthenticationFilter();
-        filter.setAuthenticationManager(authenticationManager);
-        return filter;
+    public PreAuthenticatedAuthenticationFilter<String, String> filter() {
+        return new StringAuthenticationFilter();
     }
 
     @Override

@@ -5,7 +5,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.security.authentication.AuthenticationManager;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -39,14 +38,12 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
     }
 
     @Override
-    public final PreAuthenticatedAuthenticationFilter<P, C> filter(final AuthenticationManager authenticationManager) {
+    public final PreAuthenticatedAuthenticationFilter<P, C> filter() {
         final PreAuthenticatedAuthenticationFilter<P, C> filter = refFilter.get();
         if (filter != null) {
             return filter;
         } else {
-            final PreAuthenticatedAuthenticationFilter<P, C> originalFilter = originalFilter();
-            notNull(originalFilter, "originalFilter is null").setAuthenticationManager(authenticationManager);
-            refFilter.compareAndSet(null, autowire(originalFilter));
+            refFilter.compareAndSet(null, autowire(notNull(originalFilter(), "originalFilter is null")));
             return refFilter.get();
         }
     }
@@ -65,7 +62,6 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
     private <I> I autowire(final I bean) {
         if (factory != null) {
             factory.autowireBeanProperties(bean, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false);
-            factory.initializeBean(bean, bean.getClass().getName());
         }
         return bean;
     }

@@ -24,9 +24,9 @@ class AutowiredPreAuthenticatedAuthenticationTest {
 
     @Test
     void filter() {
-        final PreAuthenticatedAuthenticationFilter<?, ?> filter = authentication.filter(null);
+        final PreAuthenticatedAuthenticationFilter<?, ?> filter = authentication.filter();
         assertNotNull(filter);
-        final PreAuthenticatedAuthenticationFilter<?, ?> again = authentication.filter(null);
+        final PreAuthenticatedAuthenticationFilter<?, ?> again = authentication.filter();
         assertNotNull(again);
         assertSame(filter, again);
     }

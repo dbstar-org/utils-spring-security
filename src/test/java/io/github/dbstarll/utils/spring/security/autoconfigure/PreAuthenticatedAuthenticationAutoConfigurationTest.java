@@ -71,12 +71,12 @@ class PreAuthenticatedAuthenticationAutoConfigurationTest {
     }
 
     @Test
-    public void noAuthentication() {
+    void noAuthentication() {
         assertNull(restTemplate.getForEntity(url(), String.class).getBody());
     }
 
     @Test
-    public void authentication() {
+    void authentication() {
         final ResponseEntity<String> entity = restTemplate.exchange(url(), HttpMethod.POST,
                 authEntity(), String.class);
         assertNotNull(entity.getBody());
@@ -85,7 +85,7 @@ class PreAuthenticatedAuthenticationAutoConfigurationTest {
     }
 
     @Test
-    public void filterNotMatch() {
+    void filterNotMatch() {
         assertNull(restTemplate.exchange(url(), HttpMethod.GET, authEntity(), String.class).getBody());
     }
 

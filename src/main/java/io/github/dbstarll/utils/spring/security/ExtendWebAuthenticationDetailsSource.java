@@ -1,11 +1,13 @@
 package io.github.dbstarll.utils.spring.security;
 
 import io.github.dbstarll.utils.spring.security.ExtendWebAuthenticationDetailsSource.ExtendWebAuthenticationDetails;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Objects;
+import java.util.StringJoiner;
 
 public class ExtendWebAuthenticationDetailsSource
         implements AuthenticationDetailsSource<HttpServletRequest, ExtendWebAuthenticationDetails> {
@@ -32,21 +34,24 @@ public class ExtendWebAuthenticationDetailsSource
         public boolean equals(final Object o) {
             if (this == o) {
                 return true;
-            } else if (o == null) {
-                return false;
             } else if (!(o instanceof ExtendWebAuthenticationDetails)) {
                 return false;
-            } else if (!super.equals(o)) {
-                return false;
-            } else {
-                final ExtendWebAuthenticationDetails that = (ExtendWebAuthenticationDetails) o;
-                return Objects.equals(userAgent, that.userAgent);
             }
+            final ExtendWebAuthenticationDetails that = (ExtendWebAuthenticationDetails) o;
+            return new EqualsBuilder().appendSuper(super.equals(o))
+                    .append(getUserAgent(), that.getUserAgent()).isEquals();
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(super.hashCode(), userAgent);
+            return new HashCodeBuilder().appendSuper(super.hashCode()).append(getUserAgent()).toHashCode();
+        }
+
+        @Override
+        public String toString() {
+            return new StringJoiner(", ", super.toString() + "[", "]")
+                    .add("userAgent='" + userAgent + "'")
+                    .toString();
         }
     }
 

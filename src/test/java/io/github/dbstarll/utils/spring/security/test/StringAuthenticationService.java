@@ -1,5 +1,7 @@
-package io.github.dbstarll.utils.spring.security;
+package io.github.dbstarll.utils.spring.security.test;
 
+import io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationService;
+import io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationUserDetails;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,19 +15,19 @@ public class StringAuthenticationService implements PreAuthenticatedAuthenticati
     @Override
     public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws UsernameNotFoundException {
         final String principal = (String) token.getPrincipal();
-        final String credentials = (String) token.getCredentials();
+        final StringCredentials credentials = (StringCredentials) token.getCredentials();
         if (!"principal".equals(principal)) {
             throw new UsernameNotFoundException(principal);
-        } else if (!"credentials".equals(credentials)) {
+        } else if (!"credentials".equals(credentials.getCredentials())) {
             throw new BadCredentialsException("credentials error");
         } else {
-            return new PreAuthenticatedAuthenticationUserDetails<String, String>(token) {
+            return new PreAuthenticatedAuthenticationUserDetails<String, StringCredentials>(token) {
                 public String getInnerPrincipal() {
                     return getPrincipal();
                 }
 
                 public String getInnerCredentials() {
-                    return getCredentials();
+                    return getCredentials().getCredentials();
                 }
 
                 @Override

@@ -1,9 +1,9 @@
 package io.github.dbstarll.utils.spring.security.autoconfigure;
 
-import io.github.dbstarll.utils.spring.security.AuthPostAuthenticationFilter;
-import io.github.dbstarll.utils.spring.security.AutowiredAuthentication;
-import io.github.dbstarll.utils.spring.security.DirectAuthentication;
 import io.github.dbstarll.utils.spring.security.autoconfigure.PreAuthenticatedAuthenticationAutoConfigurationTest.TestConfiguration;
+import io.github.dbstarll.utils.spring.security.test.AuthPostAuthenticationFilter;
+import io.github.dbstarll.utils.spring.security.test.AutowiredAuthentication;
+import io.github.dbstarll.utils.spring.security.test.DirectAuthentication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,17 +26,17 @@ public final class PreAuthenticatedAuthenticationServiceManager implements PreAu
      */
     public PreAuthenticatedAuthenticationServiceManager(
             final Collection<PreAuthenticatedAuthentication<?, ?>> authentications, final ApplicationContext ctx) {
+        final Map<Entry<Class<?>, Class<?>>, PreAuthenticatedAuthentication<?, ?>> keyAuthentications = new HashMap<>();
+        authentications.forEach(auth -> keyAuthentications.compute(parseKey(auth), (key, exist) -> {
+            if (exist == null) {
+                return auth;
+            } else {
+                throw new IllegalArgumentException(String.format("Duplicate %s: %s <--> %s", name(key), exist, auth));
+            }
+        }));
         this.services = new ConcurrentHashMap<>();
-        authentications.stream()
-                .map(auth -> PreAuthenticatedAuthenticationWrapper.wrap(auth, ctx))
-                .forEach(auth -> this.services.compute(parseKey(auth), (key, old) -> {
-                    if (old == null) {
-                        return auth.service();
-                    } else {
-                        //TODO 重复警告
-                        return old;
-                    }
-                }));
+        keyAuthentications.forEach((key, authentication) ->
+                this.services.put(key, PreAuthenticatedAuthenticationWrapper.wrap(authentication, ctx).service()));
     }
 
     private static Entry<Class<?>, Class<?>> parseKey(final PreAuthenticatedAuthentication<?, ?> authentication) {
@@ -50,13 +51,15 @@ public final class PreAuthenticatedAuthenticationServiceManager implements PreAu
                 notNull(token.getCredentials(), "token.getCredentials() is null").getClass());
     }
 
+    static String name(final Entry<Class<?>, Class<?>> k) {
+        return String.format("PreAuthenticatedAuthentication<%s, %s>", k.getKey().getName(), k.getValue().getName());
+    }
+
     @Override
     public UserDetails loadUserDetails(final PreAuthenticatedAuthenticationToken token)
             throws UsernameNotFoundException {
-        return services.computeIfAbsent(parseKey(token), k -> {
-            final String msg = String.format("PreAuthenticatedAuthentication<%s, %s> not found",
-                    k.getKey().getName(), k.getValue().getName());
-            throw new ProviderNotFoundException(msg);
+        return services.computeIfAbsent(parseKey(token), key -> {
+            throw new ProviderNotFoundException(String.format("%s not found", name(key)));
         }).loadUserDetails(token);
     }
 }

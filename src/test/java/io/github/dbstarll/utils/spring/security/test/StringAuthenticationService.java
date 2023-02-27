@@ -11,11 +11,10 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import java.util.Collection;
 import java.util.Collections;
 
-public class StringAuthenticationService implements PreAuthenticatedAuthenticationService {
+public class StringAuthenticationService<C extends StringCredentials> implements PreAuthenticatedAuthenticationService<String, C> {
     @Override
-    public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws UsernameNotFoundException {
-        final String principal = (String) token.getPrincipal();
-        final StringCredentials credentials = (StringCredentials) token.getCredentials();
+    public UserDetails loadUserDetails(String principal, C credentials, PreAuthenticatedAuthenticationToken token)
+            throws UsernameNotFoundException {
         if (!"principal".equals(principal)) {
             throw new UsernameNotFoundException(principal);
         } else if (!"credentials".equals(credentials.getCredentials())) {

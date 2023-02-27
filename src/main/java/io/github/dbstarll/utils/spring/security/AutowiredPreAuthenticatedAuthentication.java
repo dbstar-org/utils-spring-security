@@ -13,7 +13,7 @@ import static org.apache.commons.lang3.Validate.notNull;
 public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
         implements PreAuthenticatedAuthentication<P, C>, ApplicationContextAware, InitializingBean {
     private final AtomicReference<PreAuthenticatedAuthenticationFilter<P, C>> refFilter;
-    private final AtomicReference<PreAuthenticatedAuthenticationService> refService;
+    private final AtomicReference<PreAuthenticatedAuthenticationService<P, C>> refService;
 
     private final Class<P> principalClass;
     private final Class<C> credentialsClass;
@@ -49,8 +49,8 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
     }
 
     @Override
-    public final PreAuthenticatedAuthenticationService service() {
-        final PreAuthenticatedAuthenticationService service = refService.get();
+    public final PreAuthenticatedAuthenticationService<P, C> service() {
+        final PreAuthenticatedAuthenticationService<P, C> service = refService.get();
         if (service != null) {
             return service;
         } else {
@@ -68,7 +68,7 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
 
     protected abstract PreAuthenticatedAuthenticationFilter<P, C> originalFilter();
 
-    protected abstract PreAuthenticatedAuthenticationService originalService();
+    protected abstract PreAuthenticatedAuthenticationService<P, C> originalService();
 
     @Override
     public final Class<P> getPrincipalClass() {

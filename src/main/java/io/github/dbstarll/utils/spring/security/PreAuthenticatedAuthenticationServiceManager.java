@@ -15,8 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.commons.lang3.Validate.notNull;
 
-public final class PreAuthenticatedAuthenticationServiceManager implements PreAuthenticatedAuthenticationService {
-    private final Map<Entry<Class<?>, Class<?>>, PreAuthenticatedAuthenticationService> services;
+public final class PreAuthenticatedAuthenticationServiceManager
+        implements PreAuthenticatedAuthenticationService<Object, Object> {
+    private final Map<Entry<Class<?>, Class<?>>, PreAuthenticatedAuthenticationService<?, ?>> services;
 
     /**
      * 构造.
@@ -45,10 +46,10 @@ public final class PreAuthenticatedAuthenticationServiceManager implements PreAu
                 notNull(authentication.getCredentialsClass(), "authentication.getCredentialsClass() is null"));
     }
 
-    private static Entry<Class<?>, Class<?>> parseKey(final PreAuthenticatedAuthenticationToken token) {
+    private static Entry<Class<?>, Class<?>> parseKey(final Object principal, final Object credentials) {
         return EntryWrapper.wrap(
-                notNull(token.getPrincipal(), "token.getPrincipal() is null").getClass(),
-                notNull(token.getCredentials(), "token.getCredentials() is null").getClass());
+                notNull(principal, "token.getPrincipal() is null").getClass(),
+                notNull(credentials, "token.getCredentials() is null").getClass());
     }
 
     static String name(final Entry<Class<?>, Class<?>> k) {
@@ -56,9 +57,10 @@ public final class PreAuthenticatedAuthenticationServiceManager implements PreAu
     }
 
     @Override
-    public UserDetails loadUserDetails(final PreAuthenticatedAuthenticationToken token)
+    public UserDetails loadUserDetails(final Object principal, final Object credentials,
+                                       final PreAuthenticatedAuthenticationToken token)
             throws UsernameNotFoundException {
-        return services.computeIfAbsent(parseKey(token), key -> {
+        return services.computeIfAbsent(parseKey(principal, credentials), key -> {
             throw new ProviderNotFoundException(String.format("%s not found", name(key)));
         }).loadUserDetails(token);
     }

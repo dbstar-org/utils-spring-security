@@ -13,7 +13,7 @@ public interface PreAuthenticatedAuthentication<P, C> {
      *
      * @return PreAuthenticatedAuthenticationService
      */
-    PreAuthenticatedAuthenticationService service();
+    PreAuthenticatedAuthenticationService<P, C> service();
 
     /**
      * 获得Principal的Class类型.

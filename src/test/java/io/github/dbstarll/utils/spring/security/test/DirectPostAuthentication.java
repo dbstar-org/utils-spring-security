@@ -11,8 +11,8 @@ public class DirectPostAuthentication implements PreAuthenticatedAuthentication<
     }
 
     @Override
-    public PreAuthenticatedAuthenticationService service() {
-        return new StringAuthenticationService();
+    public PreAuthenticatedAuthenticationService<String, PostCredentials> service() {
+        return new StringAuthenticationService<>();
     }
 
     @Override

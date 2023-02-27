@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class PreAuthenticatedAuthenticationServiceManagerTest {
     private void useService(
             final Collection<PreAuthenticatedAuthentication<?, ?>> auths,
-            final ThrowingConsumer<PreAuthenticatedAuthenticationService> consumer)
+            final ThrowingConsumer<PreAuthenticatedAuthenticationService<?, ?>> consumer)
             throws Throwable {
         consumer.accept(new PreAuthenticatedAuthenticationServiceManager(auths, new StaticApplicationContext()));
     }

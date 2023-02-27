@@ -15,7 +15,7 @@ public class AutowiredAuthentication extends AutowiredPreAuthenticatedAuthentica
     }
 
     @Override
-    protected PreAuthenticatedAuthenticationService originalService() {
-        return new StringAuthenticationService();
+    protected PreAuthenticatedAuthenticationService<String, PostCredentials> originalService() {
+        return new StringAuthenticationService<>();
     }
 }

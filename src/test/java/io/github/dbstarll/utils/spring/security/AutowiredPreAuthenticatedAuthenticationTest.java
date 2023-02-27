@@ -34,9 +34,9 @@ class AutowiredPreAuthenticatedAuthenticationTest {
 
     @Test
     void service() {
-        final PreAuthenticatedAuthenticationService service = authentication.service();
+        final PreAuthenticatedAuthenticationService<?, ?> service = authentication.service();
         assertNotNull(service);
-        final PreAuthenticatedAuthenticationService again = authentication.service();
+        final PreAuthenticatedAuthenticationService<?, ?> again = authentication.service();
         assertNotNull(again);
         assertSame(service, again);
     }

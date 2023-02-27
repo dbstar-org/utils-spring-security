@@ -16,7 +16,7 @@ public final class PreAuthenticatedAuthenticationWrapper<P, C> extends Autowired
     }
 
     @Override
-    protected PreAuthenticatedAuthenticationService originalService() {
+    protected PreAuthenticatedAuthenticationService<P, C> originalService() {
         return original.service();
     }
 

@@ -2,11 +2,13 @@ package io.github.dbstarll.utils.spring.security;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.ThrowingConsumer;
+import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.security.authentication.ProviderNotFoundException;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
+import java.util.Collection;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,10 +18,10 @@ import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 class PreAuthenticatedAuthenticationServiceManagerTest {
     private void useService(
-            final Iterable<PreAuthenticatedAuthentication<?, ?>> authentications,
+            final Collection<PreAuthenticatedAuthentication<?, ?>> auths,
             final ThrowingConsumer<AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken>> consumer)
             throws Throwable {
-        consumer.accept(new PreAuthenticatedAuthenticationServiceManager(authentications));
+        consumer.accept(new PreAuthenticatedAuthenticationServiceManager(auths, new StaticApplicationContext()));
     }
 
     private PreAuthenticatedAuthenticationToken token(final Object principal, final Object credentials) {

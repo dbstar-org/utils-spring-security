@@ -3,6 +3,8 @@ package io.github.dbstarll.utils.spring.security.autoconfigure;
 import io.github.dbstarll.utils.spring.security.AutowiredAuthentication;
 import io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthentication;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -28,12 +30,13 @@ class PreAuthenticatedAuthenticationFilterConfigurerAdapterTest {
         final AuthenticationManagerBuilder authenticationBuilder = new AuthenticationManagerBuilder(objectPostProcessor);
         final Map<Class<?>, Object> sharedObjects = new HashMap<>();
         final HttpSecurity http = new HttpSecurity(objectPostProcessor, authenticationBuilder, sharedObjects);
+        final ApplicationContext context = new StaticApplicationContext();
 
         final AutowiredAuthentication authentication = new AutowiredAuthentication();
         final List<PreAuthenticatedAuthentication<?, ?>> authentications = Collections.singletonList(authentication);
 
         final Exception e = assertThrowsExactly(PreAuthenticatedAuthenticationFilterConfigurerException.class,
-                () -> new PreAuthenticatedAuthenticationFilterConfigurerAdapter(authentications).build(http));
+                () -> new PreAuthenticatedAuthenticationFilterConfigurerAdapter(authentications, context).build(http));
         assertEquals("register filter failed.", e.getMessage());
         assertNotNull(e.getCause());
         assertEquals(IllegalArgumentException.class, e.getCause().getClass());

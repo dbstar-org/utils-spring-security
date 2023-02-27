@@ -1,5 +1,6 @@
 package io.github.dbstarll.utils.spring.security.autoconfigure;
 
+import io.github.dbstarll.utils.spring.security.AuthPostAuthenticationFilter;
 import io.github.dbstarll.utils.spring.security.AutowiredAuthentication;
 import io.github.dbstarll.utils.spring.security.DirectAuthentication;
 import io.github.dbstarll.utils.spring.security.autoconfigure.PreAuthenticatedAuthenticationAutoConfigurationTest.TestConfiguration;
@@ -11,7 +12,6 @@ import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactor
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,8 +21,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -94,13 +92,8 @@ class PreAuthenticatedAuthenticationAutoConfigurationTest {
 
     private HttpEntity<String> authEntity() {
         final HttpHeaders headers = new HttpHeaders();
-        headers.add("test_username", "principal");
-        headers.add("test_password", "credentials");
+        headers.add(AuthPostAuthenticationFilter.HEADER_PRINCIPAL, "principal");
+        headers.add(AuthPostAuthenticationFilter.HEADER_CREDENTIALS, "credentials");
         return new HttpEntity<>(headers);
-    }
-
-    @Test
-    void context(final ApplicationContext ctx) {
-        Arrays.stream(ctx.getBeanDefinitionNames()).forEach(System.out::println);
     }
 }

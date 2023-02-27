@@ -1,11 +1,13 @@
 package io.github.dbstarll.utils.spring.security;
 
 import io.github.dbstarll.utils.lang.wrapper.EntryWrapper;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.ProviderNotFoundException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,13 +21,21 @@ public final class PreAuthenticatedAuthenticationServiceManager implements PreAu
      * 构造.
      *
      * @param authentications authentication集合
+     * @param ctx             ApplicationContext
      */
     public PreAuthenticatedAuthenticationServiceManager(
-            final Iterable<PreAuthenticatedAuthentication<?, ?>> authentications) {
+            final Collection<PreAuthenticatedAuthentication<?, ?>> authentications, final ApplicationContext ctx) {
         this.services = new ConcurrentHashMap<>();
-        authentications.forEach(auth -> this.services.put(
-                parseKey(notNull(auth, "auth is null")),
-                notNull(auth.service(), "auth.service() is null")));
+        authentications.stream()
+                .map(auth -> PreAuthenticatedAuthenticationWrapper.wrap(auth, ctx))
+                .forEach(auth -> this.services.compute(parseKey(auth), (key, old) -> {
+                    if (old == null) {
+                        return auth.service();
+                    } else {
+                        //TODO 重复警告
+                        return old;
+                    }
+                }));
     }
 
     private static Entry<Class<?>, Class<?>> parseKey(final PreAuthenticatedAuthentication<?, ?> authentication) {

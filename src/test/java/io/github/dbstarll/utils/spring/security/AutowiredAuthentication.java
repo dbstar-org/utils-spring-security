@@ -7,7 +7,7 @@ public class AutowiredAuthentication extends AutowiredPreAuthenticatedAuthentica
 
     @Override
     protected PreAuthenticatedAuthenticationFilter<String, String> originalFilter() {
-        return new StringAuthenticationFilter();
+        return new AuthPostAuthenticationFilter();
     }
 
     @Override

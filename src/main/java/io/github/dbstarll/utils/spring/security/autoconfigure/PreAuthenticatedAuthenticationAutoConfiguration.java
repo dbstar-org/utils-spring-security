@@ -3,7 +3,6 @@ package io.github.dbstarll.utils.spring.security.autoconfigure;
 import io.github.dbstarll.utils.spring.security.ExtendWebAuthenticationDetailsSource;
 import io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthentication;
 import io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationServiceManager;
-import io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationWrapper;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
@@ -15,7 +14,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @AutoConfiguration
 @EnableWebSecurity
@@ -23,42 +21,35 @@ public class PreAuthenticatedAuthenticationAutoConfiguration {
     /**
      * 装配PreAuthenticatedAuthenticationProvider.
      *
-     * @param auths              PreAuthenticatedAuthentication实例集合
-     * @param applicationContext ApplicationContext
+     * @param auths PreAuthenticatedAuthentication实例集合
+     * @param ctx   ApplicationContext
      * @return PreAuthenticatedAuthenticationProvider实例
      */
     @Bean
     @ConditionalOnMissingBean(PreAuthenticatedAuthenticationProvider.class)
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     PreAuthenticatedAuthenticationProvider preAuthenticatedAuthenticationProvider(
-            final List<PreAuthenticatedAuthentication<?, ?>> auths, final ApplicationContext applicationContext) {
+            final List<PreAuthenticatedAuthentication<?, ?>> auths, final ApplicationContext ctx) {
         final PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
         provider.setThrowExceptionWhenTokenRejected(true);
-        provider.setPreAuthenticatedUserDetailsService(
-                new PreAuthenticatedAuthenticationServiceManager(wrap(auths, applicationContext)));
+        provider.setPreAuthenticatedUserDetailsService(new PreAuthenticatedAuthenticationServiceManager(auths, ctx));
         return provider;
     }
 
     /**
      * 装配所有的{@link io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationFilter}.
      *
-     * @param http               HttpSecurity实例
-     * @param auths              PreAuthenticatedAuthentication实例集合
-     * @param applicationContext ApplicationContext
+     * @param http  HttpSecurity实例
+     * @param auths PreAuthenticatedAuthentication实例集合
+     * @param ctx   ApplicationContext
      * @return SecurityFilterChain
      */
     @Bean
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     SecurityFilterChain preAuthenticatedAuthenticationFilters(final HttpSecurity http,
                                                               final List<PreAuthenticatedAuthentication<?, ?>> auths,
-                                                              final ApplicationContext applicationContext) {
-        return new PreAuthenticatedAuthenticationFilterConfigurerAdapter(wrap(auths, applicationContext)).build(http);
-    }
-
-    private List<PreAuthenticatedAuthentication<?, ?>> wrap(final List<PreAuthenticatedAuthentication<?, ?>> auths,
-                                                            final ApplicationContext applicationContext) {
-        return auths.stream().map(auth -> PreAuthenticatedAuthenticationWrapper.wrap(auth, applicationContext))
-                .collect(Collectors.toList());
+                                                              final ApplicationContext ctx) {
+        return new PreAuthenticatedAuthenticationFilterConfigurerAdapter(auths, ctx).build(http);
     }
 
     /**

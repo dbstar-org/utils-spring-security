@@ -2,6 +2,8 @@ package io.github.dbstarll.utils.spring.security.autoconfigure;
 
 import io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthentication;
 import io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationFilter;
+import io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationWrapper;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,10 +27,11 @@ final class PreAuthenticatedAuthenticationFilterConfigurerAdapter
     private final List<PreAuthenticatedAuthenticationFilter<?, ?>> filters;
     private final RequestMatcher requestMatcher;
 
-    PreAuthenticatedAuthenticationFilterConfigurerAdapter(final List<PreAuthenticatedAuthentication<?, ?>> auths) {
+    PreAuthenticatedAuthenticationFilterConfigurerAdapter(final List<PreAuthenticatedAuthentication<?, ?>> auths,
+                                                          final ApplicationContext ctx) {
         final Set<Class<?>> distinctFilterClasses = new HashSet<>();
         this.filters = auths.stream()
-                .map(PreAuthenticatedAuthentication::filter)
+                .map(auth -> PreAuthenticatedAuthenticationWrapper.wrap(auth, ctx).filter())
                 .filter(filter -> distinctFilterClasses.add(filter.getClass()))
                 .collect(Collectors.toList());
         this.requestMatcher = new OrRequestMatcher(filters.stream()

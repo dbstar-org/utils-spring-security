@@ -95,6 +95,11 @@ class PreAuthenticatedAuthenticationAutoConfigurationTest {
         final JsonNode node = objectMapper.readTree(entity.getBody());
         assertTrue(node.get("authenticated").asBoolean());
         assertEquals("authPostEntity", node.at("/details/userAgent").asText());
+        assertEquals("POST", node.at("/details/method").asText());
+        assertEquals("http", node.at("/details/scheme").asText());
+        assertEquals("localhost", node.at("/details/host").asText());
+        assertEquals(port, node.at("/details/port").asInt());
+        assertEquals("/auth", node.at("/details/uri").asText());
         assertEquals("credentials", node.at("/credentials/credentials").asText());
         assertEquals("principal", node.get("name").asText());
         assertEquals("principal", node.at("/principal/username").asText());
@@ -110,6 +115,11 @@ class PreAuthenticatedAuthenticationAutoConfigurationTest {
         final JsonNode node = objectMapper.readTree(entity.getBody());
         assertTrue(node.get("authenticated").asBoolean());
         assertEquals("authGetEntity", node.at("/details/userAgent").asText());
+        assertEquals("GET", node.at("/details/method").asText());
+        assertEquals("http", node.at("/details/scheme").asText());
+        assertEquals("localhost", node.at("/details/host").asText());
+        assertEquals(port, node.at("/details/port").asInt());
+        assertEquals("/auth", node.at("/details/uri").asText());
         assertEquals("credentials", node.at("/credentials/credentials").asText());
         assertEquals("principal", node.get("name").asText());
         assertEquals("principal", node.at("/principal/username").asText());

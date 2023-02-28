@@ -15,11 +15,16 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
     private final AtomicReference<PreAuthenticatedAuthenticationFilter<P, C>> refFilter;
     private final AtomicReference<PreAuthenticatedAuthenticationService<P, C>> refService;
 
+    private final Class<P> principalClass;
+    private final Class<C> credentialsClass;
+
     private AutowireCapableBeanFactory factory;
 
-    protected AutowiredPreAuthenticatedAuthentication() {
+    protected AutowiredPreAuthenticatedAuthentication(final Class<P> principalClass, final Class<C> credentialsClass) {
         this.refFilter = new AtomicReference<>();
         this.refService = new AtomicReference<>();
+        this.principalClass = principalClass;
+        this.credentialsClass = credentialsClass;
     }
 
     @Override
@@ -38,8 +43,8 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
         if (filter != null) {
             return filter;
         } else {
-            final PreAuthenticatedAuthenticationFilter<P, C> original = notNull(originalFilter(), "filter is null");
-            return refFilter.compareAndSet(null, original) ? autowire(original) : refFilter.get();
+            refFilter.compareAndSet(null, autowire(notNull(originalFilter(), "originalFilter is null")));
+            return refFilter.get();
         }
     }
 
@@ -49,15 +54,14 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
         if (service != null) {
             return service;
         } else {
-            final PreAuthenticatedAuthenticationService<P, C> original = notNull(originalService(), "service is null");
-            return refService.compareAndSet(null, original) ? autowire(original) : refService.get();
+            refService.compareAndSet(null, autowire(notNull(originalService(), "originalService is null")));
+            return refService.get();
         }
     }
 
     private <I> I autowire(final I bean) {
         if (factory != null) {
             factory.autowireBeanProperties(bean, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false);
-            factory.initializeBean(bean, bean.getClass().getName());
         }
         return bean;
     }
@@ -65,4 +69,14 @@ public abstract class AutowiredPreAuthenticatedAuthentication<P, C>
     protected abstract PreAuthenticatedAuthenticationFilter<P, C> originalFilter();
 
     protected abstract PreAuthenticatedAuthenticationService<P, C> originalService();
+
+    @Override
+    public final Class<P> getPrincipalClass() {
+        return principalClass;
+    }
+
+    @Override
+    public final Class<C> getCredentialsClass() {
+        return credentialsClass;
+    }
 }

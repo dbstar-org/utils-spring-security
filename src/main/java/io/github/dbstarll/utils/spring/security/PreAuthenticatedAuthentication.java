@@ -14,4 +14,18 @@ public interface PreAuthenticatedAuthentication<P, C> {
      * @return PreAuthenticatedAuthenticationService
      */
     PreAuthenticatedAuthenticationService<P, C> service();
+
+    /**
+     * 获得Principal的Class类型.
+     *
+     * @return class of the Principal
+     */
+    Class<P> getPrincipalClass();
+
+    /**
+     * 获得Credentials的Class类型.
+     *
+     * @return class of the Credentials
+     */
+    Class<C> getCredentialsClass();
 }

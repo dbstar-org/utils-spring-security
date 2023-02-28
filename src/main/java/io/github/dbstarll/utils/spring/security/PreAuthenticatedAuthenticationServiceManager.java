@@ -1,54 +1,67 @@
 package io.github.dbstarll.utils.spring.security;
 
 import io.github.dbstarll.utils.lang.wrapper.EntryWrapper;
-import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
+import org.springframework.context.ApplicationContext;
+import org.springframework.security.authentication.ProviderNotFoundException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.commons.lang3.Validate.notNull;
+
 public final class PreAuthenticatedAuthenticationServiceManager
-        implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
-    private final Map<Entry<?, ?>, PreAuthenticatedAuthentication<?, ?>> authentications;
+        implements PreAuthenticatedAuthenticationService<Object, Object> {
+    private final Map<Entry<Class<?>, Class<?>>, PreAuthenticatedAuthenticationService<?, ?>> services;
 
     /**
      * 构造.
      *
-     * @param authn authentication集合
+     * @param authentications authentication集合
+     * @param ctx             ApplicationContext
      */
-    public PreAuthenticatedAuthenticationServiceManager(final Collection<PreAuthenticatedAuthentication<?, ?>> authn) {
-        this.authentications = new ConcurrentHashMap<>();
-        authn.forEach(authentication -> this.authentications.put(parseKey(authentication), authentication));
+    public PreAuthenticatedAuthenticationServiceManager(
+            final Collection<PreAuthenticatedAuthentication<?, ?>> authentications, final ApplicationContext ctx) {
+        final Map<Entry<Class<?>, Class<?>>, PreAuthenticatedAuthentication<?, ?>> keyAuthentications = new HashMap<>();
+        authentications.forEach(auth -> keyAuthentications.compute(parseKey(auth), (key, exist) -> {
+            if (exist == null) {
+                return auth;
+            } else {
+                throw new IllegalArgumentException(String.format("Duplicate %s: %s <--> %s", name(key), exist, auth));
+            }
+        }));
+        this.services = new ConcurrentHashMap<>();
+        keyAuthentications.forEach((key, authentication) ->
+                this.services.put(key, PreAuthenticatedAuthenticationWrapper.wrap(authentication, ctx).service()));
     }
 
-    @SuppressWarnings("unchecked")
-    private static <P, C> Entry<Class<P>, Class<C>> parseKey(final PreAuthenticatedAuthentication<P, C> auth) {
-        final ParameterizedType type = (ParameterizedType) auth.getClass().getGenericSuperclass();
-        final Type[] keys = type.getActualTypeArguments();
-        return EntryWrapper.wrap((Class<P>) keys[0], (Class<C>) keys[1]);
+    private static Entry<Class<?>, Class<?>> parseKey(final PreAuthenticatedAuthentication<?, ?> authentication) {
+        return EntryWrapper.wrap(
+                notNull(authentication.getPrincipalClass(), "authentication.getPrincipalClass() is null"),
+                notNull(authentication.getCredentialsClass(), "authentication.getCredentialsClass() is null"));
+    }
+
+    private static Entry<Class<?>, Class<?>> parseKey(final Object principal, final Object credentials) {
+        return EntryWrapper.wrap(
+                notNull(principal, "token.getPrincipal() is null").getClass(),
+                notNull(credentials, "token.getCredentials() is null").getClass());
+    }
+
+    static String name(final Entry<Class<?>, Class<?>> k) {
+        return String.format("PreAuthenticatedAuthentication<%s, %s>", k.getKey().getName(), k.getValue().getName());
     }
 
     @Override
-    public UserDetails loadUserDetails(final PreAuthenticatedAuthenticationToken token)
+    public UserDetails loadUserDetails(final Object principal, final Object credentials,
+                                       final PreAuthenticatedAuthenticationToken token)
             throws UsernameNotFoundException {
-        return loadUserDetails(token.getPrincipal(), token.getCredentials(), token);
-    }
-
-    @SuppressWarnings("unchecked")
-    private <P, C> UserDetails loadUserDetails(final P principal,
-                                               final C credentials,
-                                               final PreAuthenticatedAuthenticationToken token) {
-        final Entry<?, ?> key = EntryWrapper.wrap(principal.getClass(), credentials.getClass());
-        return ((PreAuthenticatedAuthentication<P, C>) authentications.computeIfAbsent(key, k -> {
-            throw new UsernameNotFoundException(token.getName());
-        })).service().loadUserDetails(
-                new io.github.dbstarll.utils.spring.security.PreAuthenticatedAuthenticationToken<>(token)
-        );
+        return services.computeIfAbsent(parseKey(principal, credentials), key -> {
+            throw new ProviderNotFoundException(String.format("%s not found", name(key)));
+        }).loadUserDetails(token);
     }
 }

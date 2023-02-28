@@ -1,6 +1,10 @@
 package io.github.dbstarll.utils.spring.security.autoconfigure;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.dbstarll.utils.spring.security.autoconfigure.PreAuthenticatedAuthenticationAutoConfigurationTest.TestConfiguration;
+import io.github.dbstarll.utils.spring.security.test.AuthGetAuthenticationFilter;
 import io.github.dbstarll.utils.spring.security.test.AuthPostAuthenticationFilter;
 import io.github.dbstarll.utils.spring.security.test.AutowiredAuthentication;
 import io.github.dbstarll.utils.spring.security.test.DirectAuthentication;
@@ -22,8 +26,10 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
         classes = {
@@ -56,6 +62,7 @@ class PreAuthenticatedAuthenticationAutoConfigurationTest {
     @Autowired(required = false)
     private PreAuthenticatedAuthenticationProvider preAuthenticatedAuthenticationProvider;
 
+
     @Test
     void preAuthenticatedAuthenticationProvider() {
         assertNotNull(preAuthenticatedAuthenticationProvider);
@@ -67,6 +74,10 @@ class PreAuthenticatedAuthenticationAutoConfigurationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private String url() {
         return "http://localhost:" + port + "/auth";
     }
@@ -77,23 +88,53 @@ class PreAuthenticatedAuthenticationAutoConfigurationTest {
     }
 
     @Test
-    void authentication() {
+    void authenticationPost() throws JsonProcessingException {
         final ResponseEntity<String> entity = restTemplate.exchange(url(), HttpMethod.POST,
-                authEntity(), String.class);
+                authPostEntity(), String.class);
         assertNotNull(entity.getBody());
-        System.out.println(entity.getBody());
-        entity.getHeaders().entrySet().forEach(System.out::println);
+        final JsonNode node = objectMapper.readTree(entity.getBody());
+        assertTrue(node.get("authenticated").asBoolean());
+        assertEquals("authPostEntity", node.at("/details/userAgent").asText());
+        assertEquals("credentials", node.at("/credentials/credentials").asText());
+        assertEquals("principal", node.get("name").asText());
+        assertEquals("principal", node.at("/principal/username").asText());
+        assertTrue(node.at("/principal/enabled").asBoolean());
+        assertTrue(entity.getHeaders().containsKey(HttpHeaders.SET_COOKIE));
+    }
+
+    @Test
+    void authenticationGet() throws JsonProcessingException {
+        final ResponseEntity<String> entity = restTemplate.exchange(url(), HttpMethod.GET,
+                authGetEntity(), String.class);
+        assertNotNull(entity.getBody());
+        final JsonNode node = objectMapper.readTree(entity.getBody());
+        assertTrue(node.get("authenticated").asBoolean());
+        assertEquals("authGetEntity", node.at("/details/userAgent").asText());
+        assertEquals("credentials", node.at("/credentials/credentials").asText());
+        assertEquals("principal", node.get("name").asText());
+        assertEquals("principal", node.at("/principal/username").asText());
+        assertTrue(node.at("/principal/enabled").asBoolean());
+        assertTrue(entity.getHeaders().containsKey(HttpHeaders.SET_COOKIE));
     }
 
     @Test
     void filterNotMatch() {
-        assertNull(restTemplate.exchange(url(), HttpMethod.GET, authEntity(), String.class).getBody());
+        assertNull(restTemplate.exchange(url(), HttpMethod.GET, authPostEntity(), String.class).getBody());
     }
 
-    private HttpEntity<String> authEntity() {
+    private HttpEntity<String> authPostEntity() {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(AuthPostAuthenticationFilter.HEADER_PRINCIPAL, "principal");
         headers.add(AuthPostAuthenticationFilter.HEADER_CREDENTIALS, "credentials");
+        headers.add(HttpHeaders.USER_AGENT, "authPostEntity");
+        return new HttpEntity<>(headers);
+    }
+
+    private HttpEntity<String> authGetEntity() {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(AuthGetAuthenticationFilter.HEADER_PRINCIPAL, "principal");
+        headers.add(AuthGetAuthenticationFilter.HEADER_CREDENTIALS, "credentials");
+        headers.add(HttpHeaders.USER_AGENT, "authGetEntity");
         return new HttpEntity<>(headers);
     }
 }

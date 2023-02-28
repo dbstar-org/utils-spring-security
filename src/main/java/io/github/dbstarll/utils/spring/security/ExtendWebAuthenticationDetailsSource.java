@@ -3,6 +3,7 @@ package io.github.dbstarll.utils.spring.security;
 import io.github.dbstarll.utils.spring.security.ExtendWebAuthenticationDetailsSource.ExtendWebAuthenticationDetails;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
@@ -18,7 +19,7 @@ public class ExtendWebAuthenticationDetailsSource
 
         private ExtendWebAuthenticationDetails(final HttpServletRequest request) {
             super(request);
-            this.userAgent = request.getHeader("user-agent");
+            this.userAgent = request.getHeader(HttpHeaders.USER_AGENT);
         }
 
         /**
